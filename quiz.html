@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>팩트체크 판정 연습 퀴즈</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F172A;--navy2:#1B1F5C;--blue:#1E40AF;--sky:#EFF6FF;--line:#E2E8F0;--slate:#334155;--muted:#64748B;--card:#F8FAFC;--amber:#B45309;--amberbg:#FEF3C7;--gold:#FCD34D;--green:#059669;--greenbg:#D1FAE5;--red:#DC2626;--redbg:#FEE2E2}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--slate);min-height:100vh;word-break:keep-all;background:#3B6BC4;background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);background-size:40px 40px}
+button{font-family:inherit;cursor:pointer;border:none}
+.wrap{max-width:760px;margin:0 auto;padding:18px 14px 40px}
+.display{font-family:'Black Han Sans',sans-serif;font-weight:400}
+.tab-title{display:inline-block;background:var(--navy2);color:#fff;padding:11px 24px 9px;border-radius:20px 20px 0 0;font-size:24px}
+.panel{background:#fff;border:6px solid var(--navy2);border-radius:0 24px 24px 24px;padding:22px;box-shadow:0 10px 30px rgba(15,23,42,.25)}
+.btn{padding:12px 20px;border-radius:14px;font-weight:700;font-size:16px}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-ghost{background:#fff;color:var(--blue);border:1.5px solid #BFDBFE}
+.btn-lg{font-size:21px;padding:15px 40px;border-radius:16px}
+.center{text-align:center}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+.g{border-radius:14px;color:#fff;font-weight:900;padding:12px 6px;text-align:center;font-size:15px;line-height:1.3}
+.g b{display:block;font-size:20px}
+.g1{background:#1E40AF}.g2{background:#3B82F6}.g3{background:#7C3AED}.g4{background:#EA580C}.g5{background:#DC2626}.g6{background:#64748B}
+.desc{font-size:12px;font-weight:500;opacity:.9;margin-top:3px}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.prog{flex:1;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--blue);border-radius:99px;transition:.3s}
+.qn{font-weight:900;color:var(--blue)}
+.score{font-weight:900;color:var(--amber);background:var(--amberbg);border-radius:99px;padding:4px 12px;font-size:14px}
+.claim{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:22px 18px;font-size:22px;font-weight:900;color:var(--navy);line-height:1.5;text-align:center;margin-bottom:6px}
+.ask{text-align:center;color:var(--muted);font-size:14px;margin:8px 0 12px}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.choices button{min-height:78px;transition:transform .1s,opacity .2s}
+.choices button:active{transform:scale(.97)}
+.choices.done button{opacity:.35}
+.choices.done button.picked,.choices.done button.answer{opacity:1}
+.choices.done button.picked{outline:4px solid var(--navy);outline-offset:2px}
+.choices.done button.answer{outline:4px solid var(--gold);outline-offset:2px}
+.result{margin-top:16px;border-radius:18px;padding:16px 18px;line-height:1.7}
+.result.ok{background:var(--greenbg);border:1.5px solid #86EFAC}
+.result.no{background:var(--redbg);border:1.5px solid #FCA5A5}
+.result.also{background:var(--amberbg);border:1.5px solid #FCD34D}
+.result h3{font-size:20px;color:var(--navy);margin-bottom:4px}
+.result .why{font-size:15px;color:var(--slate)}
+.result .talk{margin-top:8px;font-size:13px;color:var(--muted)}
+.next{margin-top:14px;width:100%}
+.big{font-size:64px;color:var(--navy);line-height:1}
+.rev{display:flex;flex-direction:column;gap:8px;margin:18px 0}
+.rv{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:10px 12px}
+.rv .m{font-size:20px}
+.rv .t{font-size:14px;color:var(--navy);font-weight:700}
+.rv .a{font-size:12px;color:#fff;border-radius:99px;padding:4px 10px;font-weight:900;white-space:nowrap}
+.hint{font-size:14px;color:var(--muted);line-height:1.6}
+input.name{width:100%;max-width:280px;padding:12px;border:2px solid var(--line);border-radius:14px;font-size:18px;text-align:center;font-family:inherit;margin:6px 0 14px}
+@media (max-width:460px){.claim{font-size:19px}.g{font-size:13px}.g b{font-size:18px}}
+.confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="tab-title display">판정 연습 퀴즈</div><div class="panel" id="app"></div></div>
+<script>
+const G=[null,
+ {n:"사실",d:"주된 내용이 명백히 참"},
+ {n:"대체로 사실",d:"주로 참, 세부만 부정확"},
+ {n:"절반의 사실",d:"참과 거짓이 섞임"},
+ {n:"대체로 사실이 아님",d:"주로 거짓, 일부만 정확"},
+ {n:"사실이 아님",d:"주된 내용이 명백히 거짓"},
+ {n:"판단 불가",d:"증거가 부족해 판정 못 함"}];
+const Q=[
+ {c:"금붕어의 기억력은 3초밖에 되지 않는다.",a:5,w:"실험에서 금붕어는 몇 주에서 몇 달 전 일도 기억했어요. '3초 기억력'은 근거 없는 속설이에요."},
+ {c:"만리장성은 우주에서 맨눈으로 보인다.",a:5,w:"성벽 폭이 좁고 주변 땅과 색이 비슷해서 맨눈으로는 보기 어려워요. 중국 최초의 우주비행사도 보지 못했다고 말했어요."},
+ {c:"꿀은 오래 두어도 잘 상하지 않는다.",a:2,w:"꿀은 수분이 적고 산성이라 세균이 잘 자라지 못해요. 하지만 뚜껑을 열어 두어 물기가 들어가면 발효될 수 있어서 '대체로 사실'이에요."},
+ {c:"사람은 평소 뇌의 10%만 사용한다.",a:5,w:"뇌 영상 연구를 보면 하루 동안 뇌의 거의 모든 영역이 쓰여요. '10%'라는 숫자는 근거가 없어요."},
+ {c:"우리나라 인구의 절반 이상이 수도권(서울·경기·인천)에 산다.",a:1,w:"통계청 발표에 따르면 2019년부터 수도권 인구가 전체의 50%를 넘었어요. 국가통계포털(KOSIS)에서 직접 확인할 수 있어요."},
+ {c:"당근을 많이 먹으면 시력이 좋아진다.",a:4,also:[3],w:"당근의 비타민A는 눈 건강에 꼭 필요해요(일부는 참). 하지만 많이 먹는다고 시력이 좋아지지는 않아요(주된 주장은 거짓). 그래서 '대체로 사실이 아님'이에요."},
+ {c:"우주에 지구 말고 생명체가 사는 행성은 없다.",a:6,w:"생명체가 있다는 증거도, 없다는 증거도 아직 충분하지 않아요. '판단 불가'는 틀렸다는 뜻이 아니라 '아직 판정할 수 없다'는 뜻이에요."}
+];
+const app=document.getElementById("app");
+let i=0, pts=0, picks=[], name="";
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const gbtn=(k,extra="")=>`<button class="g g${k} ${extra}" data-k="${k}"><b>${k}</b>${G[k].n}<div class="desc">${G[k].d}</div></button>`;
+function start(){
+  app.innerHTML=`<div class="center"><div style="font-size:52px">🔍</div>
+    <h2 class="display" style="font-size:30px;color:var(--navy);margin:6px 0">이 정보, 몇 번일까?</h2>
+    <p class="hint">문장 7개를 읽고 판정 등급 6개 중 하나를 골라요.<br>고르기 전에 <b>왜 그렇게 생각하는지</b> 먼저 떠올려 봐요!</p></div>
+    <div class="legend">${[1,2,3,4,5,6].map(k=>`<div class="g g${k}"><b>${k}</b>${G[k].n}<div class="desc">${G[k].d}</div></div>`).join("")}</div>
+    <div class="center"><input class="name" id="nm" maxlength="12" placeholder="이름 (선택)"><br>
+    <button class="btn btn-navy btn-lg display" id="go">시작하기</button></div>`;
+  document.getElementById("go").onclick=()=>{ name=document.getElementById("nm").value.trim(); i=0; pts=0; picks=[]; ask(); };
+}
+function ask(){
+  const q=Q[i];
+  app.innerHTML=`<div class="top"><span class="qn">Q${i+1}</span><div class="prog"><i style="width:${i/Q.length*100}%"></i></div><span class="score">${pts}점</span></div>
+    <div class="claim">${esc(q.c)}</div><p class="ask">이 문장의 판정은?</p>
+    <div class="choices" id="ch">${[1,2,3,4,5,6].map(k=>gbtn(k)).join("")}</div><div id="res"></div>`;
+  document.querySelectorAll("#ch button").forEach(b=>b.onclick=()=>answer(+b.dataset.k));
+}
+function answer(k){
+  const q=Q[i]; const ch=document.getElementById("ch"); if(ch.classList.contains("done")) return;
+  const ok=k===q.a, also=!ok&&(q.also||[]).includes(k);
+  if(ok) pts+=1; else if(also) pts+=1;
+  picks.push({k,ok:ok||also});
+  ch.classList.add("done");
+  ch.querySelector(`[data-k="${k}"]`).classList.add("picked");
+  ch.querySelector(`[data-k="${q.a}"]`).classList.add("answer");
+  const cls=ok?"ok":also?"also":"no";
+  const head=ok?"⭕ 정답!":also?"🤔 그렇게 볼 수도 있어요!":"❌ 아쉬워요";
+  document.querySelector(".score").textContent=pts+"점";
+  document.getElementById("res").innerHTML=`<div class="result ${cls}"><h3>${head}</h3><div style="font-weight:900;color:var(--navy);margin-bottom:4px">정답: ${q.a} ${G[q.a].n}</div>
+    <div class="why">${esc(q.w)}</div>
+    ${also?`<div class="talk">근거가 타당하면 '${G[k].n}'도 인정해요. 친구들과 어느 쪽이 더 맞는지 이야기해 봐요.</div>`:`<div class="talk">💬 다른 번호를 고른 친구가 있다면 서로 이유를 이야기해 봐요.</div>`}</div>
+    <button class="btn btn-navy next" id="nx">${i<Q.length-1?"다음 문제 →":"결과 보기"}</button>`;
+  document.getElementById("nx").onclick=()=>{ i++; i<Q.length?ask():end(); };
+  document.getElementById("nx").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function end(){
+  const msg=pts===Q.length?"완벽한 팩트체커!":pts>=5?"훌륭해요, 팩트체커!":pts>=3?"좋아요! 근거를 한 번 더 살펴봐요":"다시 도전해 봐요!";
+  app.innerHTML=`<div class="center"><div style="font-size:48px">${pts>=5?"🏆":"📚"}</div>
+    <div class="big display">${pts} / ${Q.length}</div>
+    <h2 class="display" style="font-size:26px;color:var(--navy);margin-top:6px">${name?esc(name)+", ":""}${msg}</h2></div>
+    <div class="rev">${Q.map((q,n)=>`<div class="rv"><span class="m">${picks[n].ok?"⭕":"❌"}</span><span class="t">${esc(q.c)}</span><span class="a g${q.a}">${G[q.a].n}</span></div>`).join("")}</div>
+    <p class="hint center">'판단 불가'는 틀렸다는 뜻이 아니라, 증거가 부족해 아직 판정하지 않는다는 뜻이에요.</p>
+    <div class="center" style="margin-top:14px"><button class="btn btn-ghost" id="again">다시 풀기</button></div>`;
+  document.getElementById("again").onclick=start;
+  if(pts>=5) burst();
+}
+function burst(){ const cs=["#F59E0B","#3B82F6","#1E40AF","#FCD34D","#DC2626","#10B981"];
+  for(let n=0;n<80;n++){ const d=document.createElement("div"); d.className="confetti"; d.style.left=Math.random()*100+"vw"; d.style.background=cs[n%6];
+    d.style.animationDuration=(2+Math.random()*2.5)+"s"; d.style.animationDelay=(Math.random()*.6)+"s"; document.body.appendChild(d); setTimeout(()=>d.remove(),5500);} }
+start();
+</script>
+</body>
+</html>
