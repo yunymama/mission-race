@@ -289,7 +289,7 @@ function missionCardsHTML(race){
 /* ===================================================================== TEACHER */
 function teacher(api){
   let code = ls.get("mr-teacher-code"), race=null, subs=[], joinQ=[], joining=false, unR=null, unS=null, view="judge", feedFilter="pending", tickH=null, lastOverSent=false;
-  const setup = { mode:"team", names:"", selfNames:true, minutes:20, missions:JSON.parse(JSON.stringify(DEFAULT_MISSIONS)) };
+  const setup = { mode:"team", names:"", selfNames:true, photo:null, minutes:20, missions:JSON.parse(JSON.stringify(DEFAULT_MISSIONS)) };
   const studentURL = c => location.origin + location.pathname + "?c=" + c;
 
   async function boot(){
@@ -321,7 +321,8 @@ function teacher(api){
             <div class="chips" style="margin-top:10px"><span class="rule">정답 1개 = 1점</span><span class="rule">5개 가장 먼저 완료 = 보너스 1점</span></div></div>
         </div>
         <div class="block"><h3><span class="num">4</span>미션 확인 · 수정</h3><div class="mlist" id="medit"></div>
-          <div style="text-align:right;margin-top:10px"><button class="btn btn-ghost" id="mreset">기본 미션으로</button></div></div>
+          <div style="text-align:right;margin-top:10px"><button class="btn btn-ghost" id="mreset">기본 미션으로</button></div>
+          <div class="photo-box" style="margin-top:14px"><div style="flex:1;min-width:200px"><div class="display" style="font-size:20px;color:var(--gold)">5번 미션 사진</div><p style="font-size:13px;color:#CBD5E1;margin:6px 0 10px;line-height:1.6">지금 올려 두면 방을 만들 때 함께 들어가요. 나중에 '미션·사진' 탭에서 바꿀 수도 있어요.</p><label class="btn btn-amber" for="spIn">${setup.photo?"사진 바꾸기":"사진 올리기"}</label><input type="file" id="spIn" accept="image/*" class="hidden">${setup.photo?`<button class="btn btn-red" id="spDel" style="margin-left:6px">지우기</button>`:""}</div>${setup.photo?`<img src="${setup.photo}" alt="미션 사진" style="max-height:160px">`:""}</div></div>
       </div>
       <div class="center"><button class="btn btn-navy btn-lg display" id="create">방 만들기</button></div></div>`;
     document.querySelectorAll(".mode").forEach(b=>b.onclick=()=>{ const cur=$("names").value.trim().split("\n").filter(Boolean);
@@ -337,6 +338,8 @@ function teacher(api){
       <input class="wide" value="${esc(m.task)}" data-i="${i}" data-k="task" placeholder="미션"><input class="wide" value="${esc(m.rec)}" data-i="${i}" data-k="rec" placeholder="기록할 것"></div></div>`).join("");
     me.querySelectorAll("input").forEach(x=>x.oninput=()=>setup.missions[+x.dataset.i][x.dataset.k]=x.value);
     $("mreset").onclick=()=>{ setup.missions=JSON.parse(JSON.stringify(DEFAULT_MISSIONS)); renderSetup(); };
+    $("spIn").onchange=e=>{ const f=e.target.files[0]; if(f){ setup.names=$("names").value; shrink(f).then(d=>{ setup.photo=d; renderSetup(); toast("사진을 넣었어요"); }).catch(showErr); } };
+    $("spDel")&&($("spDel").onclick=()=>{ setup.names=$("names").value; setup.photo=null; renderSetup(); });
     $("create").onclick=create;
   }
   async function create(){
@@ -349,7 +352,7 @@ function teacher(api){
       for(let t=0;t<8;t++){ const k=String(Math.floor(1000+Math.random()*9000)); if(!(await api.getRace(k))){ c=k; break; } }
       if(!c) throw new Error("코드를 만들지 못했어요");
       await api.createRace(c,{ mode:setup.mode, names: self?[]:names, selfNames:self, joined:{}, minutes:setup.minutes, missions:setup.missions, status:"lobby",
-        timer:{state:"idle", remain:setup.minutes*60000}, board:emptyBoard(self?0:names.length), doneAt:{}, photo:null });
+        timer:{state:"idle", remain:setup.minutes*60000}, board:emptyBoard(self?0:names.length), doneAt:{}, photo:setup.photo||null });
       ls.set("mr-teacher-code",c); attach(c);
     }catch(e){ $("create").disabled=false; showErr(e); }
   }
