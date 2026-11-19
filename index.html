@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>검증 사이트 미션 레이스</title>
+<title>팩트체크 미션 레이스</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -303,7 +303,7 @@ function teacher(api){
   function renderSetup(){
     if(!setup.names) setup.names=autoNames(6,"team");
     app.innerHTML = `
-      <div class="head"><div class="tab-title display">미션 레이스 · 선생님</div></div>
+      <div class="head"><div class="tab-title display">팩트체크 미션 레이스 · 선생님</div></div>
       <div class="panel"><div class="grid2">
         <div style="display:flex;flex-direction:column;gap:18px">
           <div class="block"><h3><span class="num">1</span>대결 방식</h3>
@@ -400,7 +400,7 @@ function teacher(api){
     const pend=subs.filter(x=>x.status==="pending");
     const live=race.status!=="lobby";
     app.innerHTML = `
-      <div class="head"><div class="tab-title display">미션 레이스 · 선생님</div></div>
+      <div class="head"><div class="tab-title display">팩트체크 미션 레이스 · 선생님</div></div>
       <div class="panel">
         <div class="topbar">
           <div class="codebox"><div><div class="lbl">입장 코드</div><div class="code">${code}</div>
@@ -524,7 +524,7 @@ function student(api){
   let code=params.get("c")||ls.get("mr-student-code")||"", race=null, mine=[], unR=null, unS=null, me=null, tickH=null, drafts={}, ended=false;
 
   function renderJoin(msg){
-    app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div>
+    app.innerHTML = `<div class="head"><div class="tab-title display">팩트체크 미션 레이스</div></div>
       <div class="panel"><div class="join-card"><div style="font-size:54px">🔎</div>
         <h2 class="display" style="font-size:30px;color:var(--navy);margin-top:6px">입장 코드를 입력해요</h2>
         <input class="codein" id="cin" inputmode="numeric" maxlength="4" value="${esc(code)}" placeholder="0000">
@@ -543,7 +543,7 @@ function student(api){
     }catch(e){ showErr(e); }
   }
   function renderNameEntry(waiting){
-    app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div>
+    app.innerHTML = `<div class="head"><div class="tab-title display">팩트체크 미션 레이스</div></div>
       <div class="panel"><div class="join-card"><div style="font-size:54px">${waiting?"⏳":"🙋"}</div>
         <h2 class="display" style="font-size:28px;color:var(--navy);margin-top:6px">${waiting?"등록하는 중이에요…":"내 이름을 적어요"}</h2>
         ${waiting?`<p class="hint" style="font-size:15px">선생님 화면에 이름이 올라가면 자동으로 시작돼요.</p>`:`
@@ -561,7 +561,7 @@ function student(api){
     unR=api.watchRace(code,r=>{ if(!r) return; race=r; const j=(r.joined||{})[api.uid]; if(j!==undefined){ me=j; attach(); } }, showErr);
   }
   function renderPick(){
-    app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div>
+    app.innerHTML = `<div class="head"><div class="tab-title display">팩트체크 미션 레이스</div></div>
       <div class="panel"><h2 class="display" style="font-size:28px;color:var(--navy)">${race.mode==="team"?"우리 팀을 골라요":"내 이름(번호)을 골라요"}</h2>
         <p class="hint">${race.mode==="team"?"같은 팀 친구들이 각자 기기로 들어와도 점수는 팀이 함께 받아요.":"한 번 고르면 이 기기는 그 이름으로 참여해요. 친구 것을 고르지 않도록 조심!"}</p>
         <div class="namegrid">${race.names.map((n,i)=>`<button data-i="${i}">${esc(n)}</button>`).join("")}</div></div>`;
@@ -601,7 +601,7 @@ function student(api){
       <div class="s-score">점수 ${scoreOf(race,me)}점 · ${rankMap(race)[me]}위</div>
       <div class="s-timer" data-stimer>${fmt(remainMs(race))}</div></div>`;
     if(race.status==="lobby"){
-      app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div><div class="panel">${head}
+      app.innerHTML = `<div class="head"><div class="tab-title display">팩트체크 미션 레이스</div></div><div class="panel">${head}
         <div class="join-card"><div class="wait-ic">⏳</div><h2 class="display" style="font-size:28px;color:var(--navy)">곧 시작해요!</h2>
         <p class="hint" style="font-size:15px">선생님이 레이스를 시작하면 미션이 열려요.</p>
         ${race.selfNames?"":`<button class="btn btn-ghost" id="chg" style="margin-top:14px">${race.mode==="team"?"팀":"이름"} 다시 고르기</button>`}</div></div>`;
@@ -616,7 +616,7 @@ function student(api){
     }
     ended=false;
     const open=canSubmit();
-    app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div><div class="panel">${head}
+    app.innerHTML = `<div class="head"><div class="tab-title display">팩트체크 미션 레이스</div></div><div class="panel">${head}
       ${!open?`<p class="err" style="margin-bottom:12px">${race.timer.state==="paused"?"⏸ 선생님이 잠시 멈췄어요. 다시 시작하면 제출할 수 있어요.":"⏰ 시간이 끝났어요. 결과 발표를 기다려요!"}</p>`:""}
       ${race.missions.map((m,k)=>{ const st=mstate(k); const mineK=mine.filter(x=>x.mission===k && x.who===me); const last=mineK[mineK.length-1];
         const label={ok:"✅ 정답",pending:"⏳ 심사 중",no:"❌ 다시 도전",none:"도전 전"}[st];
