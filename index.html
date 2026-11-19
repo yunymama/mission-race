@@ -288,8 +288,8 @@ function missionCardsHTML(race){
 
 /* ===================================================================== TEACHER */
 function teacher(api){
-  let code = ls.get("mr-teacher-code"), race=null, subs=[], unR=null, unS=null, view="judge", feedFilter="pending", tickH=null, lastOverSent=false;
-  const setup = { mode:"team", names:"", minutes:20, missions:JSON.parse(JSON.stringify(DEFAULT_MISSIONS)) };
+  let code = ls.get("mr-teacher-code"), race=null, subs=[], joinQ=[], joining=false, unR=null, unS=null, view="judge", feedFilter="pending", tickH=null, lastOverSent=false;
+  const setup = { mode:"team", names:"", selfNames:true, minutes:20, missions:JSON.parse(JSON.stringify(DEFAULT_MISSIONS)) };
   const studentURL = c => location.origin + location.pathname + "?c=" + c;
 
   async function boot(){
@@ -312,9 +312,10 @@ function teacher(api){
               <button class="mode ${setup.mode==="solo"?"on":""}" data-mode="solo"><div class="ic">🙋</div><b>개인전</b><span>한 명씩 각자 도전</span></button>
             </div></div>
           <div class="block"><h3><span class="num">2</span>${setup.mode==="team"?"참가 팀":"참가 학생"}</h3>
-            <div class="quick"><input type="number" id="qn" min="1" max="40" value="${setup.mode==="team"?6:25}"><button class="btn btn-ghost" id="qmake">개 자동 만들기</button></div>
+            ${setup.mode==="solo"?`<div class="chips" style="margin-bottom:12px"><button class="chipbtn ${setup.selfNames?"on":""}" data-self="1">✍️ 학생이 직접 이름 입력</button><button class="chipbtn ${!setup.selfNames?"on":""}" data-self="0">📋 명단에서 고르기</button></div>`:""}
+            <div class="${setup.mode==="solo"&&setup.selfNames?"hidden":""}"><div class="quick"><input type="number" id="qn" min="1" max="40" value="${setup.mode==="team"?6:25}"><button class="btn btn-ghost" id="qmake">개 자동 만들기</button></div>
             <textarea class="names" id="names" spellcheck="false">${esc(setup.names)}</textarea>
-            <p class="hint">한 줄에 하나씩. 학생들은 입장할 때 이 목록에서 자기 ${setup.mode==="team"?"팀":"이름"}을 골라요.</p></div>
+            <p class="hint">한 줄에 하나씩. 학생들은 입장할 때 이 목록에서 자기 ${setup.mode==="team"?"팀":"이름"}을 골라요.</p></div>${setup.mode==="solo"&&setup.selfNames?`<p class="hint" style="margin-top:0">학생들이 입장할 때 자기 이름을 직접 적어요. 들어온 순서대로 점수판에 나타나요.</p>`:""}</div>
           <div class="block"><h3><span class="num">3</span>제한 시간</h3>
             <div class="chips" id="mins">${[10,15,20,25,30].map(m=>`<button class="chipbtn ${setup.minutes===m?"on":""}" data-m="${m}">${m}분</button>`).join("")}</div>
             <div class="chips" style="margin-top:10px"><span class="rule">정답 1개 = 1점</span><span class="rule">5개 가장 먼저 완료 = 보너스 1점</span></div></div>
@@ -328,6 +329,7 @@ function teacher(api){
       setup.names = auto ? autoNames(setup.mode==="team"?6:25, setup.mode) : $("names").value; renderSetup(); });
     $("qmake").onclick=()=>{ $("names").value=autoNames(Math.max(1,Math.min(40,+$("qn").value||1)),setup.mode); };
     $("names").oninput=()=>setup.names=$("names").value;
+    document.querySelectorAll("[data-self]").forEach(b=>b.onclick=()=>{ setup.names=$("names").value; setup.selfNames=b.dataset.self==="1"; renderSetup(); });
     document.querySelectorAll("#mins .chipbtn").forEach(b=>b.onclick=()=>{ setup.minutes=+b.dataset.m; document.querySelectorAll("#mins .chipbtn").forEach(x=>x.classList.toggle("on",x===b)); });
     const me=$("medit");
     me.innerHTML = setup.missions.map((m,i)=>`<div class="medit"><span class="num">${i+1}</span><div class="fields">
@@ -339,23 +341,46 @@ function teacher(api){
   }
   async function create(){
     const names=[...new Set($("names").value.split("\n").map(x=>x.trim()).filter(Boolean))].slice(0,40);
-    if(!names.length){ toast("참가자를 한 명 이상 적어 주세요"); return; }
+    const self = setup.mode==="solo" && setup.selfNames;
+    if(!self && !names.length){ toast("참가자를 한 명 이상 적어 주세요"); return; }
     $("create").disabled=true;
     try{
       let c=null;
       for(let t=0;t<8;t++){ const k=String(Math.floor(1000+Math.random()*9000)); if(!(await api.getRace(k))){ c=k; break; } }
       if(!c) throw new Error("코드를 만들지 못했어요");
-      await api.createRace(c,{ mode:setup.mode, names, minutes:setup.minutes, missions:setup.missions, status:"lobby",
-        timer:{state:"idle", remain:setup.minutes*60000}, board:emptyBoard(names.length), doneAt:{}, photo:null });
+      await api.createRace(c,{ mode:setup.mode, names: self?[]:names, selfNames:self, joined:{}, minutes:setup.minutes, missions:setup.missions, status:"lobby",
+        timer:{state:"idle", remain:setup.minutes*60000}, board:emptyBoard(self?0:names.length), doneAt:{}, photo:null });
       ls.set("mr-teacher-code",c); attach(c);
     }catch(e){ $("create").disabled=false; showErr(e); }
   }
   function attach(c){
     code=c; unR&&unR(); unS&&unS();
-    unR=api.watchRace(c, r=>{ race=r; if(!race){ toast("방이 사라졌어요"); ls.del("mr-teacher-code"); renderSetup(); return; } render(); }, showErr);
-    unS=api.watchAllSubs(c, s=>{ const before=subs.filter(x=>x.status==="pending").length; subs=s; const after=subs.filter(x=>x.status==="pending").length;
+    unR=api.watchRace(c, r=>{ race=r; if(!race){ toast("방이 사라졌어요"); ls.del("mr-teacher-code"); renderSetup(); return; } render(); processJoins(); }, showErr);
+    unS=api.watchAllSubs(c, s=>{ const before=subs.filter(x=>x.status==="pending").length; subs=s.filter(x=>x.mission>=0); joinQ=s.filter(x=>x.mission<0 && x.status==="pending"); processJoins(); const after=subs.filter(x=>x.status==="pending").length;
       if(after>before && view!=="judge") toast(`새 답안 ${after-before}개가 들어왔어요`); render(); }, showErr);
     clearInterval(tickH); tickH=setInterval(tick,250);
+  }
+  async function processJoins(){
+    if(joining || !race || !joinQ.length) return;
+    joining=true;
+    try{
+      while(joinQ.length){
+        const j=joinQ.shift();
+        const joined={...(race.joined||{})};
+        if(joined[j.uid]===undefined){
+          const names=[...race.names]; let nm=String(j.answer||"").trim().slice(0,20)||"이름없음"; const base=nm; let n=2;
+          while(names.includes(nm)) nm=`${base}(${n++})`;
+          names.push(nm); joined[j.uid]=names.length-1;
+          const board=JSON.parse(JSON.stringify(race.board||{})); board[names.length-1]=[0,0,0,0,0];
+          race={...race,names,joined,board};
+          await api.updateRace(code,{names,joined,board});
+          toast(`🙋 ${nm} 입장!`);
+        }
+        await api.judge(code,j.id,"ok");
+      }
+    }catch(e){ showErr(e); }
+    joining=false;
+    if(joinQ.length) processJoins();
   }
   function tick(){
     if(!race) return;
@@ -512,9 +537,28 @@ function student(api){
     if(!/^\d{4}$/.test(c)){ renderJoin("숫자 4자리를 입력해요."); return; }
     try{ const r=await api.getRace(c); if(!r){ renderJoin("그런 방이 없어요. 코드를 다시 확인해요."); return; }
       code=c; ls.set("mr-student-code",c); race=r;
+      if(r.selfNames){ me=(r.joined||{})[api.uid]; if(me===undefined) me=null; if(me===null) renderNameEntry(); else attach(); return; }
       const saved=ls.get("mr-student-me-"+c); me = saved!==null && r.names[+saved]!==undefined ? +saved : null;
       if(me===null) renderPick(); else attach();
     }catch(e){ showErr(e); }
+  }
+  function renderNameEntry(waiting){
+    app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div>
+      <div class="panel"><div class="join-card"><div style="font-size:54px">${waiting?"⏳":"🙋"}</div>
+        <h2 class="display" style="font-size:28px;color:var(--navy);margin-top:6px">${waiting?"등록하는 중이에요…":"내 이름을 적어요"}</h2>
+        ${waiting?`<p class="hint" style="font-size:15px">선생님 화면에 이름이 올라가면 자동으로 시작돼요.</p>`:`
+        <input class="codein" id="nmin" maxlength="20" placeholder="이름" style="letter-spacing:2px;font-size:30px;font-family:inherit;font-weight:900">
+        <div><button class="btn btn-navy btn-lg display" id="nmgo">참가하기</button></div>`}</div></div>`;
+    if(waiting) return;
+    const go=async()=>{ const v=$("nmin").value.trim(); if(!v){ toast("이름을 적어 주세요"); return; }
+      $("nmgo").disabled=true;
+      try{ await api.submit(code,{who:-1, mission:-1, answer:v.slice(0,20), link:"join"}); renderNameEntry(true); waitJoin(); }
+      catch(e){ $("nmgo").disabled=false; showErr(e); } };
+    $("nmgo").onclick=go; $("nmin").onkeydown=e=>{ if(e.key==="Enter") go(); };
+  }
+  function waitJoin(){
+    unR&&unR();
+    unR=api.watchRace(code,r=>{ if(!r) return; race=r; const j=(r.joined||{})[api.uid]; if(j!==undefined){ me=j; attach(); } }, showErr);
   }
   function renderPick(){
     app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div>
@@ -560,8 +604,8 @@ function student(api){
       app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div><div class="panel">${head}
         <div class="join-card"><div class="wait-ic">⏳</div><h2 class="display" style="font-size:28px;color:var(--navy)">곧 시작해요!</h2>
         <p class="hint" style="font-size:15px">선생님이 레이스를 시작하면 미션이 열려요.</p>
-        <button class="btn btn-ghost" id="chg" style="margin-top:14px">${race.mode==="team"?"팀":"이름"} 다시 고르기</button></div></div>`;
-      $("chg").onclick=()=>{ ls.del("mr-student-me-"+code); me=null; unR&&unR(); unS&&unS(); renderPick(); };
+        ${race.selfNames?"":`<button class="btn btn-ghost" id="chg" style="margin-top:14px">${race.mode==="team"?"팀":"이름"} 다시 고르기</button>`}</div></div>`;
+      $("chg")&&($("chg").onclick=()=>{ ls.del("mr-student-me-"+code); me=null; unR&&unR(); unS&&unS(); renderPick(); });
       return;
     }
     if(race.status==="ended"){
