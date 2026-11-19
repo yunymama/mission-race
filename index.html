@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>검증 사이트 미션 레이스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="config.js"></script>
+<style>
+:root{
+  --navy:#0F172A; --navy2:#1B1F5C; --blue:#1E40AF; --blue2:#3B82F6; --sky:#EFF6FF; --line:#E2E8F0;
+  --slate:#334155; --muted:#64748B; --card:#F8FAFC; --amber:#B45309; --amberbg:#FEF3C7; --gold:#FCD34D;
+  --red:#DC2626; --redbg:#FEE2E2; --green:#059669; --greenbg:#D1FAE5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--slate);min-height:100vh;word-break:keep-all;
+  background-color:#3B6BC4;
+  background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);
+  background-size:40px 40px;}
+button{font-family:inherit;cursor:pointer;border:none}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,textarea{font-family:inherit}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 16px 40px}
+.display{font-family:'Black Han Sans',sans-serif;font-weight:400;letter-spacing:.5px}
+.head{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.tab-title{background:var(--navy2);color:#fff;padding:12px 26px 10px;border-radius:20px 20px 0 0;font-size:26px}
+.panel{background:#fff;border:6px solid var(--navy2);border-radius:0 26px 26px 26px;padding:24px;box-shadow:0 10px 30px rgba(15,23,42,.25)}
+.hidden{display:none!important}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.block{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:18px}
+.block h3{font-size:17px;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.num{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--blue);color:#fff;font-size:14px;font-weight:700;flex:none}
+.mode-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode{background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px 10px;text-align:center}
+.mode .ic{font-size:32px;line-height:1}
+.mode b{display:block;font-size:19px;color:var(--navy);margin-top:6px}
+.mode span{font-size:13px;color:var(--muted)}
+.mode.on{border-color:var(--blue);background:var(--sky);box-shadow:0 0 0 3px rgba(30,64,175,.15)}
+.quick{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:14px}
+.quick input{width:70px;padding:7px 8px;border:1.5px solid var(--line);border-radius:10px;font-size:15px}
+.btn{padding:9px 16px;border-radius:12px;font-weight:700;font-size:14px}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-ghost{background:#fff;color:var(--blue);border:1.5px solid #BFDBFE}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-amber{background:var(--amberbg);color:var(--amber)}
+.btn-red{background:var(--redbg);color:var(--red)}
+.btn-green{background:var(--green);color:#fff}
+.btn-lg{font-size:20px;padding:14px 36px;border-radius:16px}
+textarea.names{width:100%;min-height:160px;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:15px;line-height:1.6;resize:vertical}
+.hint{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chipbtn{padding:8px 14px;border-radius:999px;background:#fff;border:1.5px solid var(--line);font-weight:700;color:var(--slate)}
+.chipbtn.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.mlist{display:flex;flex-direction:column;gap:8px}
+.medit{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px}
+.medit .fields{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.medit input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px}
+.medit input.wide{grid-column:1/-1}
+.center{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:20px}
+.rule{background:var(--amberbg);color:var(--amber);font-weight:700;font-size:13px;border-radius:999px;padding:6px 12px}
+
+/* teacher top */
+.topbar{display:flex;gap:16px;align-items:stretch;flex-wrap:wrap;margin-bottom:16px}
+.codebox{background:var(--navy);color:#fff;border-radius:18px;padding:12px 18px;display:flex;gap:16px;align-items:center}
+.codebox .lbl{font-size:12px;color:#CBD5E1}
+.codebox .code{font-family:'Black Han Sans';font-size:48px;letter-spacing:6px;line-height:1;color:var(--gold)}
+.qr{background:#fff;padding:6px;border-radius:10px;line-height:0}
+.qr img,.qr canvas{width:96px!important;height:96px!important}
+.timer{font-family:'Black Han Sans',sans-serif;font-size:56px;line-height:1;color:var(--navy);min-width:170px;text-align:center;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 16px;display:grid;place-items:center}
+.timer.warn{color:var(--red);border-color:#FCA5A5;background:#FEF2F2}
+.timer.over{color:var(--muted)}
+.tctl{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.tctl .row{display:flex;gap:6px;flex-wrap:wrap}
+.tabs{display:flex;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:4px;flex-wrap:wrap;align-self:center;margin-left:auto}
+.tabs button{padding:9px 14px;border-radius:10px;background:transparent;font-weight:700;color:var(--muted);font-size:14px;position:relative}
+.tabs button.on{background:var(--blue);color:#fff}
+.badge{display:inline-block;min-width:20px;padding:1px 6px;border-radius:999px;background:var(--red);color:#fff;font-size:12px;margin-left:4px}
+.statusline{font-size:13px;color:var(--muted);margin-bottom:10px}
+.pill{display:inline-block;border-radius:999px;padding:3px 10px;font-weight:700;font-size:12px}
+.pill.lobby{background:var(--amberbg);color:var(--amber)}
+.pill.live{background:var(--greenbg);color:var(--green)}
+.pill.ended{background:#E2E8F0;color:var(--slate)}
+
+/* judge feed */
+.feed{display:flex;flex-direction:column;gap:10px}
+.sub{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px 14px}
+.sub.pending{background:#FFFBEB;border-color:#FCD34D}
+.sub .who{font-weight:900;color:var(--navy);font-size:16px;min-width:90px}
+.sub .who small{display:block;font-weight:700;color:var(--blue);font-size:13px}
+.sub .ans{font-size:16px;color:var(--navy);font-weight:700;word-break:break-all}
+.sub .src{font-size:13px;margin-top:4px;word-break:break-all}
+.sub .src a{color:var(--blue)}
+.sub .meta{font-size:12px;color:var(--muted);margin-top:4px}
+.sub .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.empty{text-align:center;color:var(--muted);padding:30px;font-size:15px}
+.seg{display:flex;gap:6px;margin-bottom:12px}
+
+/* board */
+.board{width:100%;border-collapse:separate;border-spacing:0 6px}
+.board th{font-size:13px;color:var(--muted);font-weight:700;padding:0 6px;text-align:center}
+.board th:nth-child(2){text-align:left}
+.board td{background:var(--card);padding:6px;text-align:center;border-top:1.5px solid var(--line);border-bottom:1.5px solid var(--line)}
+.board td:first-child{border-left:1.5px solid var(--line);border-radius:14px 0 0 14px}
+.board td:last-child{border-right:1.5px solid var(--line);border-radius:0 14px 14px 0}
+.board tr.done td{background:#F0FDF4;border-color:#BBF7D0}
+.board tr.me td{box-shadow:inset 0 0 0 9999px rgba(59,130,246,.06)}
+.rank{font-family:'Black Han Sans';font-size:22px;color:var(--muted);width:44px}
+.rank.r1{color:#D97706}.rank.r2{color:#64748B}.rank.r3{color:#B45309}
+.pname{text-align:left!important;font-weight:900;color:var(--navy);font-size:17px;white-space:nowrap}
+.pname small{display:inline-block;margin-left:6px;font-size:12px;font-weight:700;color:var(--amber);background:var(--amberbg);border-radius:999px;padding:2px 8px;vertical-align:middle}
+.mk{width:46px;height:38px;border-radius:11px;background:#fff;border:2px dashed #CBD5E1;font-size:17px;color:#CBD5E1;font-weight:900}
+.mk.on{background:var(--blue);border:2px solid var(--blue);color:#fff}
+.mk.wait{background:var(--amberbg);border:2px solid #FCD34D;color:var(--amber)}
+.mk.ro{cursor:default}
+.total{font-family:'Black Han Sans';font-size:26px;color:var(--blue);width:70px}
+.compact .mk{width:36px;height:30px;font-size:14px}
+.compact .pname{font-size:14px}
+.compact .total{font-size:20px}
+.compact .board{border-spacing:0 3px}
+
+/* mission cards */
+.missions{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.mcard{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.mcard .mn{width:42px;height:42px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-family:'Black Han Sans';font-size:22px}
+.mcard .site{font-weight:900;color:var(--navy);font-size:17px}
+.mcard .task{font-size:17px;line-height:1.5;flex:1}
+.mcard .rec{background:var(--sky);color:var(--blue);font-weight:700;font-size:14px;border-radius:12px;padding:8px 10px;text-align:center}
+.mcard a{font-size:13px;color:var(--blue);font-weight:700;text-decoration:none}
+.photo-box{margin-top:16px;background:var(--navy);border-radius:18px;padding:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;color:#fff}
+.photo-box img{max-height:300px;max-width:100%;border-radius:12px;background:#fff}
+.photo-box label{cursor:pointer}
+
+/* student */
+.s-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.s-who{background:var(--navy);color:#fff;border-radius:14px;padding:10px 16px;font-weight:900;font-size:18px}
+.s-who small{display:block;font-size:12px;color:#CBD5E1;font-weight:500}
+.s-timer{font-family:'Black Han Sans';font-size:34px;color:var(--navy);margin-left:auto;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px 14px}
+.s-timer.warn{color:var(--red);background:#FEF2F2;border-color:#FCA5A5}
+.s-score{font-weight:900;color:var(--blue);font-size:15px;background:var(--sky);border-radius:12px;padding:10px 14px}
+.smission{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+.smission.ok{background:#F0FDF4;border-color:#86EFAC}
+.smission.pending{background:#FFFBEB;border-color:#FCD34D}
+.smission.no{background:#FEF2F2;border-color:#FCA5A5}
+.smission .top{display:flex;gap:10px;align-items:center}
+.smission .top .mn{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-family:'Black Han Sans';font-size:20px;flex:none}
+.smission .site{font-weight:900;color:var(--navy)}
+.smission .site a{font-size:13px;margin-left:6px;color:var(--blue);font-weight:700;text-decoration:none}
+.smission .state{margin-left:auto;font-weight:900;font-size:13px;border-radius:999px;padding:4px 10px;white-space:nowrap}
+.state.ok{background:var(--green);color:#fff}
+.state.pending{background:var(--amberbg);color:var(--amber)}
+.state.no{background:var(--red);color:#fff}
+.state.none{background:#E2E8F0;color:var(--muted)}
+.smission .task{font-size:16px;margin:10px 0 4px;color:var(--navy);font-weight:700;line-height:1.5}
+.smission .rec{font-size:13px;color:var(--blue);font-weight:700;margin-bottom:10px}
+.smission input{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:12px;font-size:16px;margin-bottom:8px;background:#fff}
+.smission .mine{font-size:14px;color:var(--slate);background:#fff;border-radius:12px;padding:10px 12px;border:1px dashed var(--line);line-height:1.6;word-break:break-all}
+.smission img{max-width:100%;border-radius:12px;margin:6px 0 10px}
+.namegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:14px}
+.namegrid button{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px 8px;font-weight:900;font-size:17px;color:var(--navy)}
+.namegrid button:hover{border-color:var(--blue);background:var(--sky)}
+.join-card{max-width:520px;margin:30px auto;text-align:center}
+.join-card input.codein{font-family:'Black Han Sans';font-size:48px;letter-spacing:12px;text-align:center;width:100%;max-width:300px;padding:10px;border:3px solid var(--line);border-radius:18px;margin:16px 0}
+.wait-ic{font-size:64px;margin:10px 0}
+
+/* podium */
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:10px;margin:10px 0 24px}
+.pod{width:200px;max-width:32%;text-align:center}
+@media (max-width:560px){.pod .nm{font-size:16px}.pod .block2{font-size:36px}.pod.p1 .block2{height:130px}.pod.p2 .block2{height:95px}.pod.p3 .block2{height:70px}}
+.bwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pod .nm{font-weight:900;font-size:21px;color:var(--navy);margin-bottom:6px}
+.pod .sc{font-size:15px;color:var(--muted);margin-bottom:8px}
+.pod .block2{border-radius:18px 18px 0 0;color:#fff;font-family:'Black Han Sans';font-size:50px;display:grid;place-items:center}
+.pod.p1 .block2{background:linear-gradient(#F59E0B,#D97706);height:180px}
+.pod.p2 .block2{background:linear-gradient(#94A3B8,#64748B);height:135px}
+.pod.p3 .block2{background:linear-gradient(#D97706,#92400E);height:100px}
+.reslist{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+.resrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:8px 14px}
+.resrow .r{font-family:'Black Han Sans';color:var(--muted);width:34px}
+.resrow .n{flex:1;font-weight:700;color:var(--navy)}
+.resrow .s{font-family:'Black Han Sans';color:var(--blue);font-size:20px}
+.confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.75);display:none;place-items:center;z-index:50;padding:20px}
+.overlay.show{display:grid}
+.modal{background:#fff;border-radius:24px;padding:30px 34px;text-align:center;max-width:500px;width:100%;border:6px solid var(--navy2)}
+.modal h2{font-size:36px;color:var(--navy);margin-bottom:8px}
+.modal p{color:var(--slate);margin-bottom:18px;line-height:1.6}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:14px;font-weight:700;z-index:70;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.err{background:var(--redbg);color:#7F1D1D;border-radius:14px;padding:14px 16px;line-height:1.7;font-size:14px}
+code{background:#F1F5F9;padding:1px 6px;border-radius:6px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="panel" style="border-radius:26px;text-align:center"><p class="statusline" style="margin:0">불러오는 중…</p></div>
+</div>
+<div class="overlay" id="ov"><div class="modal" id="ovBody"></div></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* 파이어베이스 설정은 같은 폴더의 config.js 파일에 있어요. */
+const CFG = (typeof firebaseConfig !== "undefined") ? firebaseConfig : null;
+
+const FB = "https://www.gstatic.com/firebasejs/10.12.2/";
+const DEFAULT_MISSIONS = [
+  {site:"국가통계포털 (KOSIS)", url:"https://kosis.kr", task:"서귀포시의 최근 인구 수 찾기", rec:"인구 수 + 기준 연도"},
+  {site:"국가법령정보센터", url:"https://www.law.go.kr", task:"「청소년 보호법」에서 '청소년'의 나이 기준 찾기", rec:"나이 기준 + 몇 조인지"},
+  {site:"네이버 뉴스라이브러리", url:"https://newslibrary.naver.com", task:"1988년 9월 17일(서울올림픽 개막일) 신문 1면 제목 찾기", rec:"신문 이름 + 1면 제목"},
+  {site:"빅카인즈", url:"https://www.bigkinds.or.kr", task:"'가짜뉴스' 키워드 기사가 가장 많았던 해 찾기", rec:"연도 + 기사 수"},
+  {site:"구글 렌즈 · 스마트렌즈", url:"https://lens.google.com", task:"'미션 사진'의 원래 출처 찾기", rec:"원본 링크 + 처음 올라온 날짜"}
+];
+const NM = 5;
+const $ = id => document.getElementById(id);
+const app = $("app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ls = { get(k){ try{return localStorage.getItem(k);}catch(e){return null;} }, set(k,v){ try{localStorage.setItem(k,v);}catch(e){} }, del(k){ try{localStorage.removeItem(k);}catch(e){} } };
+function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2200); }
+function modal(html){ $("ovBody").innerHTML=html; $("ov").classList.add("show"); }
+function closeModal(){ $("ov").classList.remove("show"); }
+function ask(title,msg){ return new Promise(res=>{ modal(`<h2 class="display" style="font-size:28px">${esc(title)}</h2><p>${esc(msg)}</p><div class="center" style="margin:0"><button class="btn btn-navy" id="cY">네</button><button class="btn btn-ghost" id="cN">아니요</button></div>`);
+  $("cY").onclick=()=>{closeModal();res(true);}; $("cN").onclick=()=>{closeModal();res(false);}; }); }
+function fmt(ms){ let s=Math.max(0,Math.ceil(ms/1000)); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+function burst(n){ const cs=["#F59E0B","#3B82F6","#1E40AF","#FCD34D","#DC2626","#10B981"];
+  for(let i=0;i<n;i++){ const d=document.createElement("div"); d.className="confetti"; d.style.left=Math.random()*100+"vw"; d.style.background=cs[i%cs.length];
+    d.style.animationDuration=(2+Math.random()*2.5)+"s"; d.style.animationDelay=(Math.random()*.6)+"s"; document.body.appendChild(d); setTimeout(()=>d.remove(),5500);} }
+function timeAgo(t){ const s=Math.round((Date.now()-t)/1000); return s<60? `${s}초 전` : `${Math.floor(s/60)}분 전`; }
+
+/* ---------------- data layer ---------------- */
+async function makeFirebaseApi(cfg){
+  const [{initializeApp},{getFirestore,doc,getDoc,setDoc,updateDoc,onSnapshot,collection,addDoc,query,orderBy,where},{getAuth,signInAnonymously}] =
+    await Promise.all([import(FB+"firebase-app.js"), import(FB+"firebase-firestore.js"), import(FB+"firebase-auth.js")]);
+  const fapp=initializeApp(cfg); const db=getFirestore(fapp); const auth=getAuth(fapp);
+  await signInAnonymously(auth);
+  const uid=auth.currentUser.uid;
+  return {
+    uid,
+    async getRace(code){ const s=await getDoc(doc(db,"races",code)); return s.exists()? s.data(): null; },
+    createRace(code,data){ return setDoc(doc(db,"races",code),{...data, owner:uid, createdAt:Date.now()}); },
+    updateRace(code,patch){ return updateDoc(doc(db,"races",code),patch); },
+    watchRace(code,cb,err){ return onSnapshot(doc(db,"races",code), s=>cb(s.exists()?s.data():null), err); },
+    submit(code,data){ return addDoc(collection(db,"races",code,"subs"),{...data, uid, status:"pending", at:Date.now()}); },
+    judge(code,id,status){ return updateDoc(doc(db,"races",code,"subs",id),{status, judgedAt:Date.now()}); },
+    watchAllSubs(code,cb,err){ return onSnapshot(query(collection(db,"races",code,"subs"),orderBy("at")), q=>cb(q.docs.map(d=>({id:d.id,...d.data()}))), err); },
+    watchMySubs(code,cb,err){ return onSnapshot(query(collection(db,"races",code,"subs"),where("uid","==",uid)), q=>cb(q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.at-b.at)), err); },
+  };
+}
+
+/* ---------------- scoring (shared) ---------------- */
+function emptyBoard(n){ const b={}; for(let i=0;i<n;i++) b[i]=[0,0,0,0,0]; return b; }
+function finishOrder(race){ // indexes that completed all 5, by time
+  const d=race.doneAt||{}; return Object.keys(d).filter(k=>d[k]).sort((a,b)=>d[a]-d[b]).map(Number);
+}
+function scoreOf(race,i){ const row=(race.board||{})[i]||[]; const base=row.filter(Boolean).length; return base + (finishOrder(race)[0]===i?1:0); }
+function ranking(race){
+  const fo=finishOrder(race);
+  return race.names.map((_,i)=>i).sort((a,b)=>{ const d=scoreOf(race,b)-scoreOf(race,a); if(d) return d;
+    const ia=fo.indexOf(a), ib=fo.indexOf(b); if(ia!==-1||ib!==-1) return (ia===-1?999:ia)-(ib===-1?999:ib); return a-b; });
+}
+function rankMap(race){ const list=ranking(race), fo=finishOrder(race), r={}; let prev=null,pr=0;
+  list.forEach((i,k)=>{ const key=scoreOf(race,i)+"|"+fo.indexOf(i); if(key!==prev){pr=k+1;prev=key;} r[i]=pr; }); return r; }
+function remainMs(race){ const t=race.timer||{}; if(t.state==="running") return t.endAt-Date.now(); if(t.state==="paused") return t.remain; if(t.state==="over") return 0; return (race.minutes||20)*60000; }
+function boardHTML(race, opts={}){
+  const rk=rankMap(race), fo=finishOrder(race), compact=race.names.length>10;
+  const order = opts.sorted ? ranking(race) : race.names.map((_,i)=>i);
+  return `<div class="bwrap ${compact?"compact":""}"><table class="board"><thead><tr><th>순위</th><th>${race.mode==="team"?"팀":"이름"}</th>
+    ${Array.from({length:NM},(_,k)=>`<th>미션 ${k+1}</th>`).join("")}<th>점수</th></tr></thead><tbody>
+    ${order.map(i=>{ const row=(race.board||{})[i]||[0,0,0,0,0]; const ord=fo.indexOf(i); const done=row.every(Boolean);
+      return `<tr class="${done?"done":""} ${opts.me===i?"me":""}"><td class="rank r${rk[i]}">${rk[i]}</td>
+      <td class="pname">${esc(race.names[i])}${ord===0?`<small>⚡ 1등 완료 +1</small>`:done?`<small style="background:var(--greenbg);color:var(--green)">${ord+1}번째 완료</small>`:""}${opts.me===i?`<small style="background:var(--sky);color:var(--blue)">나</small>`:""}</td>
+      ${row.map((v,k)=>{ const w=!v && opts.pending && opts.pending.has(i+"-"+k);
+        return `<td><button class="mk ${v?"on":w?"wait":""} ${opts.editable?"":"ro"}" data-i="${i}" data-k="${k}" ${opts.editable?"":"tabindex='-1'"}>${v?"✓":w?"…":k+1}</button></td>`;}).join("")}
+      <td class="total">${scoreOf(race,i)}</td></tr>`; }).join("")}
+    </tbody></table></div>`;
+}
+function podiumHTML(race){
+  const list=ranking(race), rk=rankMap(race), top=list.slice(0,3), ord=[1,0,2].filter(k=>top[k]!==undefined);
+  return `<div class="podium">${ord.map(k=>`<div class="pod p${k+1}"><div class="nm">${esc(race.names[top[k]])}</div><div class="sc">${scoreOf(race,top[k])}점</div><div class="block2">${rk[top[k]]}</div></div>`).join("")}</div>
+    <div class="reslist">${list.slice(3).map(i=>`<div class="resrow"><span class="r">${rk[i]}</span><span class="n">${esc(race.names[i])}</span><span class="s">${scoreOf(race,i)}점</span></div>`).join("")}</div>`;
+}
+function missionCardsHTML(race){
+  return `<div class="missions">${race.missions.map((m,k)=>`<div class="mcard"><div class="mn">${k+1}</div><div class="site">${esc(m.site)}</div>
+    <div class="task">${esc(m.task)}</div><div class="rec">✍️ ${esc(m.rec)}</div>${m.url?`<a href="${esc(m.url)}" target="_blank" rel="noopener">사이트 열기 ↗</a>`:""}</div>`).join("")}</div>`;
+}
+
+/* ===================================================================== TEACHER */
+function teacher(api){
+  let code = ls.get("mr-teacher-code"), race=null, subs=[], unR=null, unS=null, view="judge", feedFilter="pending", tickH=null, lastOverSent=false;
+  const setup = { mode:"team", names:"", minutes:20, missions:JSON.parse(JSON.stringify(DEFAULT_MISSIONS)) };
+  const studentURL = c => location.origin + location.pathname + "?c=" + c;
+
+  async function boot(){
+    if(code){
+      try{ const r=await api.getRace(code); if(r && r.owner===api.uid){ attach(code); return; } }catch(e){}
+      ls.del("mr-teacher-code"); code=null;
+    }
+    renderSetup();
+  }
+  function autoNames(n,m){ return Array.from({length:n},(_,i)=> m==="team"?`${i+1}팀`:`${i+1}번`).join("\n"); }
+  function renderSetup(){
+    if(!setup.names) setup.names=autoNames(6,"team");
+    app.innerHTML = `
+      <div class="head"><div class="tab-title display">미션 레이스 · 선생님</div></div>
+      <div class="panel"><div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div class="block"><h3><span class="num">1</span>대결 방식</h3>
+            <div class="mode-row">
+              <button class="mode ${setup.mode==="team"?"on":""}" data-mode="team"><div class="ic">👥</div><b>팀전</b><span>같은 팀은 누구 기기로 내도 함께 점수</span></button>
+              <button class="mode ${setup.mode==="solo"?"on":""}" data-mode="solo"><div class="ic">🙋</div><b>개인전</b><span>한 명씩 각자 도전</span></button>
+            </div></div>
+          <div class="block"><h3><span class="num">2</span>${setup.mode==="team"?"참가 팀":"참가 학생"}</h3>
+            <div class="quick"><input type="number" id="qn" min="1" max="40" value="${setup.mode==="team"?6:25}"><button class="btn btn-ghost" id="qmake">개 자동 만들기</button></div>
+            <textarea class="names" id="names" spellcheck="false">${esc(setup.names)}</textarea>
+            <p class="hint">한 줄에 하나씩. 학생들은 입장할 때 이 목록에서 자기 ${setup.mode==="team"?"팀":"이름"}을 골라요.</p></div>
+          <div class="block"><h3><span class="num">3</span>제한 시간</h3>
+            <div class="chips" id="mins">${[10,15,20,25,30].map(m=>`<button class="chipbtn ${setup.minutes===m?"on":""}" data-m="${m}">${m}분</button>`).join("")}</div>
+            <div class="chips" style="margin-top:10px"><span class="rule">정답 1개 = 1점</span><span class="rule">5개 가장 먼저 완료 = 보너스 1점</span></div></div>
+        </div>
+        <div class="block"><h3><span class="num">4</span>미션 확인 · 수정</h3><div class="mlist" id="medit"></div>
+          <div style="text-align:right;margin-top:10px"><button class="btn btn-ghost" id="mreset">기본 미션으로</button></div></div>
+      </div>
+      <div class="center"><button class="btn btn-navy btn-lg display" id="create">방 만들기</button></div></div>`;
+    document.querySelectorAll(".mode").forEach(b=>b.onclick=()=>{ const cur=$("names").value.trim().split("\n").filter(Boolean);
+      const auto=cur.length===0||cur.every(x=>/^\d+(팀|번)$/.test(x.trim())); setup.mode=b.dataset.mode;
+      setup.names = auto ? autoNames(setup.mode==="team"?6:25, setup.mode) : $("names").value; renderSetup(); });
+    $("qmake").onclick=()=>{ $("names").value=autoNames(Math.max(1,Math.min(40,+$("qn").value||1)),setup.mode); };
+    $("names").oninput=()=>setup.names=$("names").value;
+    document.querySelectorAll("#mins .chipbtn").forEach(b=>b.onclick=()=>{ setup.minutes=+b.dataset.m; document.querySelectorAll("#mins .chipbtn").forEach(x=>x.classList.toggle("on",x===b)); });
+    const me=$("medit");
+    me.innerHTML = setup.missions.map((m,i)=>`<div class="medit"><span class="num">${i+1}</span><div class="fields">
+      <input value="${esc(m.site)}" data-i="${i}" data-k="site" placeholder="검증 도구"><input value="${esc(m.url)}" data-i="${i}" data-k="url" placeholder="사이트 주소">
+      <input class="wide" value="${esc(m.task)}" data-i="${i}" data-k="task" placeholder="미션"><input class="wide" value="${esc(m.rec)}" data-i="${i}" data-k="rec" placeholder="기록할 것"></div></div>`).join("");
+    me.querySelectorAll("input").forEach(x=>x.oninput=()=>setup.missions[+x.dataset.i][x.dataset.k]=x.value);
+    $("mreset").onclick=()=>{ setup.missions=JSON.parse(JSON.stringify(DEFAULT_MISSIONS)); renderSetup(); };
+    $("create").onclick=create;
+  }
+  async function create(){
+    const names=[...new Set($("names").value.split("\n").map(x=>x.trim()).filter(Boolean))].slice(0,40);
+    if(!names.length){ toast("참가자를 한 명 이상 적어 주세요"); return; }
+    $("create").disabled=true;
+    try{
+      let c=null;
+      for(let t=0;t<8;t++){ const k=String(Math.floor(1000+Math.random()*9000)); if(!(await api.getRace(k))){ c=k; break; } }
+      if(!c) throw new Error("코드를 만들지 못했어요");
+      await api.createRace(c,{ mode:setup.mode, names, minutes:setup.minutes, missions:setup.missions, status:"lobby",
+        timer:{state:"idle", remain:setup.minutes*60000}, board:emptyBoard(names.length), doneAt:{}, photo:null });
+      ls.set("mr-teacher-code",c); attach(c);
+    }catch(e){ $("create").disabled=false; showErr(e); }
+  }
+  function attach(c){
+    code=c; unR&&unR(); unS&&unS();
+    unR=api.watchRace(c, r=>{ race=r; if(!race){ toast("방이 사라졌어요"); ls.del("mr-teacher-code"); renderSetup(); return; } render(); }, showErr);
+    unS=api.watchAllSubs(c, s=>{ const before=subs.filter(x=>x.status==="pending").length; subs=s; const after=subs.filter(x=>x.status==="pending").length;
+      if(after>before && view!=="judge") toast(`새 답안 ${after-before}개가 들어왔어요`); render(); }, showErr);
+    clearInterval(tickH); tickH=setInterval(tick,250);
+  }
+  function tick(){
+    if(!race) return;
+    const ms=remainMs(race);
+    document.querySelectorAll("[data-timer]").forEach(el=>{ el.textContent=fmt(ms); el.classList.toggle("warn", ms<=60000 && ms>0 && race.timer.state==="running"); el.classList.toggle("over", race.timer.state==="over"); });
+    if(race.timer.state==="running" && ms<=0 && !lastOverSent){ lastOverSent=true;
+      api.updateRace(code,{timer:{state:"over",remain:0}}).catch(showErr);
+      modal(`<div style="font-size:56px">⏰</div><h2 class="display">시간 종료!</h2><p>학생들의 제출이 막혔어요. 남은 답안을 심사하고 결과를 발표해요.</p><div class="center" style="margin:0"><button class="btn btn-blue" id="okv">심사하러 가기</button></div>`);
+      $("okv").onclick=()=>{ closeModal(); view="judge"; render(); };
+      beep();
+    }
+    if(race.timer.state!=="running") lastOverSent=false;
+  }
+  function pendingSet(){ const s=new Set(); subs.forEach(x=>{ if(x.status==="pending") s.add(x.who+"-"+x.mission); }); return s; }
+  function render(){
+    if(!race) return;
+    const pend=subs.filter(x=>x.status==="pending");
+    const live=race.status!=="lobby";
+    app.innerHTML = `
+      <div class="head"><div class="tab-title display">미션 레이스 · 선생님</div></div>
+      <div class="panel">
+        <div class="topbar">
+          <div class="codebox"><div><div class="lbl">입장 코드</div><div class="code">${code}</div>
+            <div class="lbl" style="margin-top:6px;max-width:230px;word-break:break-all">${esc(studentURL(code))}</div></div><div class="qr" id="qr"></div></div>
+          <div class="timer" data-timer>${fmt(remainMs(race))}</div>
+          <div class="tctl">
+            <div class="row">
+              ${race.timer.state==="running"?`<button class="btn btn-amber" id="tPause">⏸ 멈춤</button>`:
+                race.timer.state==="over"?`<button class="btn btn-ghost" id="tMore">+3분 연장</button>`:
+                `<button class="btn btn-green" id="tGo">▶ ${race.status==="lobby"?"레이스 시작":"계속"}</button>`}
+              <button class="btn btn-ghost" id="tPlus">+1분</button><button class="btn btn-ghost" id="tMinus">−1분</button>
+            </div>
+            <div class="row"><span class="pill ${race.status}">${race.status==="lobby"?"입장 대기 중":race.status==="live"?"진행 중":"종료"}</span>
+              <span class="pill" style="background:var(--sky);color:var(--blue)">${race.mode==="team"?"👥 팀전":"🙋 개인전"} · ${race.names.length}${race.mode==="team"?"팀":"명"}</span></div>
+          </div>
+          <div class="tabs">
+            ${[["judge",`📝 심사${pend.length?`<span class="badge">${pend.length}</span>`:""}`],["board","🏆 순위"],["missions","🎯 미션·사진"],["result","🏁 결과"]]
+              .map(([k,l])=>`<button data-v="${k}" class="${view===k?"on":""}">${l}</button>`).join("")}
+          </div>
+        </div>
+        <div id="tv"></div>
+        <div class="center" style="justify-content:space-between">
+          <button class="btn btn-ghost" id="newRace">새 레이스 만들기</button>
+          ${race.status!=="ended"?`<button class="btn btn-navy" id="endRace">🏁 레이스 끝내고 결과 발표</button>`:`<button class="btn btn-ghost" id="reopen">결과 발표 취소 (다시 진행)</button>`}
+        </div>
+      </div>`;
+    try{ if(window.QRCode) new QRCode($("qr"),{text:studentURL(code),width:192,height:192,correctLevel:QRCode.CorrectLevel.M}); else $("qr").classList.add("hidden"); }catch(e){ $("qr").classList.add("hidden"); }
+    document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{ view=b.dataset.v; render(); });
+    $("tGo")&&( $("tGo").onclick=()=>{ const rem=race.timer.state==="paused"?race.timer.remain:(race.timer.remain??race.minutes*60000);
+      api.updateRace(code,{status:"live", timer:{state:"running", endAt:Date.now()+rem}}).catch(showErr); } );
+    $("tPause")&&( $("tPause").onclick=()=>api.updateRace(code,{timer:{state:"paused", remain:Math.max(0,race.timer.endAt-Date.now())}}).catch(showErr) );
+    $("tMore")&&( $("tMore").onclick=()=>api.updateRace(code,{status:"live",timer:{state:"paused", remain:180000}}).catch(showErr) );
+    $("tPlus").onclick=()=>adjust(60000); $("tMinus").onclick=()=>adjust(-60000);
+    $("newRace").onclick=async()=>{ if(await ask("새 레이스를 만들까요?","지금 방은 그대로 두고 새 방을 만들어요. 학생들은 새 코드로 다시 들어와야 해요.")){ unR&&unR(); unS&&unS(); race=null; subs=[]; ls.del("mr-teacher-code"); code=null; renderSetup(); } };
+    $("endRace")&&( $("endRace").onclick=async()=>{ if(await ask("레이스를 끝낼까요?","학생 화면에도 최종 결과가 나타나요.")){ await api.updateRace(code,{status:"ended", timer:{state:"over",remain:0}}).catch(showErr); view="result"; render(); burst(120);} } );
+    $("reopen")&&( $("reopen").onclick=()=>api.updateRace(code,{status:"live"}).catch(showErr) );
+    renderView();
+    tick();
+  }
+  function adjust(d){
+    const t=race.timer;
+    if(t.state==="running") api.updateRace(code,{timer:{state:"running", endAt:Math.max(Date.now()+1000,t.endAt+d)}}).catch(showErr);
+    else { const rem=Math.max(0,(t.state==="over"?0:(t.remain??race.minutes*60000))+d); api.updateRace(code,{timer:{state: race.status==="lobby"?"idle":"paused", remain:rem}}).catch(showErr); }
+  }
+  function renderView(){
+    const tv=$("tv");
+    if(view==="judge"){
+      const list = feedFilter==="pending" ? subs.filter(x=>x.status==="pending") : [...subs].reverse();
+      tv.innerHTML = `
+        <div class="seg"><button class="chipbtn ${feedFilter==="pending"?"on":""}" data-f="pending">심사 기다리는 답 (${subs.filter(x=>x.status==="pending").length})</button>
+          <button class="chipbtn ${feedFilter==="all"?"on":""}" data-f="all">전체 기록 (${subs.length})</button></div>
+        <div class="feed">${list.length? list.map(s=>{ const m=race.missions[s.mission]||{};
+          return `<div class="sub ${s.status==="pending"?"pending":""}">
+            <div class="who">${esc(race.names[s.who]??"?")}<small>미션 ${s.mission+1}</small></div>
+            <div><div class="ans">${esc(s.answer)}</div>
+              <div class="src">출처: ${/^https?:\/\//i.test(s.link||"")?`<a href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.link)}</a>`:esc(s.link||"(없음)")}</div>
+              <div class="meta">${esc(m.rec||"")} · ${timeAgo(s.at)}${s.status!=="pending"?` · ${s.status==="ok"?"✅ 정답 처리":"❌ 다시 하기"}`:""}</div></div>
+            <div class="acts">${s.status==="pending"
+              ? `<button class="btn btn-green" data-j="ok" data-id="${s.id}">✓ 정답</button><button class="btn btn-red" data-j="no" data-id="${s.id}">✗ 다시</button>`
+              : `<button class="btn btn-ghost" data-j="pending" data-id="${s.id}">되돌리기</button>`}</div></div>`; }).join("")
+          : `<div class="empty">${feedFilter==="pending"?"심사할 답이 없어요. 학생들이 제출하면 여기에 바로 나타나요.":"아직 제출된 답이 없어요."}</div>`}</div>`;
+      tv.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ feedFilter=b.dataset.f; renderView(); });
+      tv.querySelectorAll("[data-j]").forEach(b=>b.onclick=()=>judge(b.dataset.id,b.dataset.j,b));
+    } else if(view==="board"){
+      tv.innerHTML = `<p class="statusline">학생 제출 없이도 칸을 눌러 직접 정답 처리하거나 취소할 수 있어요. 노란 칸 = 심사 기다리는 답</p>${boardHTML(race,{editable:true,pending:pendingSet()})}`;
+      tv.querySelectorAll(".mk").forEach(b=>b.onclick=()=>setCell(+b.dataset.i,+b.dataset.k,!((race.board[b.dataset.i]||[])[b.dataset.k])));
+    } else if(view==="missions"){
+      tv.innerHTML = missionCardsHTML(race) + `
+        <div class="photo-box"><div style="flex:1;min-width:220px"><div class="display" style="font-size:22px;color:var(--gold)">미션 5 · 미션 사진</div>
+          <p style="font-size:14px;color:#CBD5E1;margin:6px 0 12px;line-height:1.6">올린 사진은 학생 화면의 5번 미션에도 바로 나타나요.</p>
+          <label class="btn btn-amber" for="pIn">사진 올리기</label><input type="file" id="pIn" accept="image/*" class="hidden">
+          ${race.photo?`<button class="btn btn-red" id="pDel" style="margin-left:6px">지우기</button>`:""}</div>
+          <div>${race.photo?`<img src="${race.photo}" alt="미션 사진">`:`<span style="color:#CBD5E1;font-size:14px">아직 사진이 없어요.</span>`}</div></div>`;
+      $("pIn").onchange=e=>{ const f=e.target.files[0]; if(f) shrink(f).then(d=>api.updateRace(code,{photo:d})).then(()=>toast("사진을 올렸어요")).catch(showErr); };
+      $("pDel")&&($("pDel").onclick=()=>api.updateRace(code,{photo:null}).catch(showErr));
+    } else {
+      tv.innerHTML = podiumHTML(race);
+    }
+  }
+  function newBoardWith(i,k,val){
+    const board=JSON.parse(JSON.stringify(race.board||{})); if(!board[i]) board[i]=[0,0,0,0,0];
+    board[i][k]=val?1:0;
+    const doneAt={...(race.doneAt||{})}; const done=board[i].every(Boolean);
+    if(done && !doneAt[i]) doneAt[i]=Date.now(); if(!done) delete doneAt[i];
+    return {board,doneAt,newlyDone: done && !(race.doneAt||{})[i]};
+  }
+  async function setCell(i,k,val){
+    const {board,doneAt,newlyDone}=newBoardWith(i,k,val);
+    try{ await api.updateRace(code,{board,doneAt}); celebrate(i,newlyDone,doneAt); }catch(e){ showErr(e); }
+  }
+  function celebrate(i,newlyDone,doneAt){
+    if(!newlyDone) return;
+    const fo=Object.keys(doneAt).sort((a,b)=>doneAt[a]-doneAt[b]);
+    if(fo[0]==String(i)){ toast(`⚡ ${race.names[i]} 가장 먼저 5개 완료! 보너스 +1점`); burst(50); } else toast(`${race.names[i]} 미션 5개 완료!`);
+  }
+  async function judge(id,status,btn){
+    const s=subs.find(x=>x.id===id); if(!s) return; btn.disabled=true;
+    try{
+      await api.judge(code,id,status);
+      const i=s.who,k=s.mission;
+      if(status==="ok" && !((race.board[i]||[])[k])){ await setCell(i,k,true); }
+      if(status!=="ok" && s.status==="ok"){ // undoing an approval: clear cell unless another approved answer exists
+        const other=subs.some(x=>x.id!==id && x.who===i && x.mission===k && x.status==="ok");
+        if(!other) await setCell(i,k,false);
+      }
+    }catch(e){ btn.disabled=false; showErr(e); }
+  }
+  boot();
+}
+function shrink(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onerror=rej; r.onload=()=>{ const img=new Image(); img.onerror=rej;
+  img.onload=()=>{ const max=900, sc=Math.min(1,max/Math.max(img.width,img.height)); const c=document.createElement("canvas"); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height); res(c.toDataURL("image/jpeg",.72)); }; img.src=r.result; }; r.readAsDataURL(file); }); }
+let actx=null;
+document.addEventListener("click",()=>{ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} });
+function beep(){ try{ if(!actx) return; [0,.35,.7].forEach((t,i)=>{ const o=actx.createOscillator(),g=actx.createGain(); o.frequency.value=i===2?988:784; o.type="square";
+  g.gain.setValueAtTime(.12,actx.currentTime+t); g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+t+.3); o.connect(g).connect(actx.destination); o.start(actx.currentTime+t); o.stop(actx.currentTime+t+.32); }); }catch(e){} }
+
+/* ===================================================================== STUDENT */
+function student(api){
+  const params=new URLSearchParams(location.search);
+  let code=params.get("c")||ls.get("mr-student-code")||"", race=null, mine=[], unR=null, unS=null, me=null, tickH=null, drafts={}, ended=false;
+
+  function renderJoin(msg){
+    app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div>
+      <div class="panel"><div class="join-card"><div style="font-size:54px">🔎</div>
+        <h2 class="display" style="font-size:30px;color:var(--navy);margin-top:6px">입장 코드를 입력해요</h2>
+        <input class="codein" id="cin" inputmode="numeric" maxlength="4" value="${esc(code)}" placeholder="0000">
+        ${msg?`<p class="err" style="margin-bottom:12px">${esc(msg)}</p>`:""}
+        <div><button class="btn btn-navy btn-lg display" id="go">입장하기</button></div></div></div>`;
+    $("go").onclick=()=>enter($("cin").value.trim());
+    $("cin").onkeydown=e=>{ if(e.key==="Enter") enter($("cin").value.trim()); };
+  }
+  async function enter(c){
+    if(!/^\d{4}$/.test(c)){ renderJoin("숫자 4자리를 입력해요."); return; }
+    try{ const r=await api.getRace(c); if(!r){ renderJoin("그런 방이 없어요. 코드를 다시 확인해요."); return; }
+      code=c; ls.set("mr-student-code",c); race=r;
+      const saved=ls.get("mr-student-me-"+c); me = saved!==null && r.names[+saved]!==undefined ? +saved : null;
+      if(me===null) renderPick(); else attach();
+    }catch(e){ showErr(e); }
+  }
+  function renderPick(){
+    app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div>
+      <div class="panel"><h2 class="display" style="font-size:28px;color:var(--navy)">${race.mode==="team"?"우리 팀을 골라요":"내 이름(번호)을 골라요"}</h2>
+        <p class="hint">${race.mode==="team"?"같은 팀 친구들이 각자 기기로 들어와도 점수는 팀이 함께 받아요.":"한 번 고르면 이 기기는 그 이름으로 참여해요. 친구 것을 고르지 않도록 조심!"}</p>
+        <div class="namegrid">${race.names.map((n,i)=>`<button data-i="${i}">${esc(n)}</button>`).join("")}</div></div>`;
+    app.querySelectorAll(".namegrid button").forEach(b=>b.onclick=async()=>{ const i=+b.dataset.i;
+      if(await ask(`${race.names[i]}(으)로 참여할까요?`,"선택하면 바꾸기 어려워요.")){ me=i; ls.set("mr-student-me-"+code,String(i)); attach(); } });
+  }
+  function attach(){
+    unR&&unR(); unS&&unS();
+    unR=api.watchRace(code,r=>{ if(!r){ ls.del("mr-student-code"); renderJoin("방이 닫혔어요."); return; }
+      const prevBoard=race&&race.board&&race.board[me]?[...race.board[me]]:null; race=r;
+      if(prevBoard){ (r.board[me]||[]).forEach((v,k)=>{ if(v && !prevBoard[k]) toast(`🎉 미션 ${k+1} 정답!`); }); }
+      render(); }, showErr);
+    unS=api.watchMySubs(code,s=>{ const prev=new Map(mine.map(x=>[x.id,x.status])); mine=s;
+      s.forEach(x=>{ if(prev.get(x.id)==="pending" && x.status==="no") toast(`미션 ${x.mission+1}: 다시 확인해 봐요!`); }); render(); }, showErr);
+    clearInterval(tickH); tickH=setInterval(tick,250);
+  }
+  function canSubmit(){ return race.status==="live" && race.timer.state!=="over" && remainMs(race)>0; }
+  function tick(){ if(!race) return; const ms=remainMs(race); const el=document.querySelector("[data-stimer]");
+    if(el){ el.textContent=fmt(ms); el.classList.toggle("warn", ms<=60000 && race.timer.state==="running"); }
+    const open=canSubmit(); document.querySelectorAll("[data-sub]").forEach(b=>{ if(b._open!==open){ b._open=open; render(); } });
+  }
+  function mstate(k){
+    if(((race.board||{})[me]||[])[k]) return "ok";
+    const mineK=mine.filter(x=>x.mission===k && x.who===me); const last=mineK[mineK.length-1];
+    if(!last) return "none"; return last.status==="ok" ? "ok" : last.status;
+  }
+  function render(){
+    if(!race || me===null) return;
+    // keep typed drafts
+    document.querySelectorAll("[data-a]").forEach(x=>{ drafts[x.dataset.a]=x.value; });
+    document.querySelectorAll("[data-l]").forEach(x=>{ drafts["l"+x.dataset.l]=x.value; });
+    const ae=document.activeElement; let focusSel=null, caret=null;
+    if(ae && ae.matches && ae.matches("[data-a],[data-l]")){ focusSel=ae.hasAttribute("data-a")?`[data-a="${ae.dataset.a}"]`:`[data-l="${ae.dataset.l}"]`; try{ caret=[ae.selectionStart,ae.selectionEnd]; }catch(e){} }
+    const restore=()=>{ if(!focusSel) return; const el=document.querySelector(focusSel); if(el && !el.disabled){ el.focus({preventScroll:true}); try{ if(caret) el.setSelectionRange(caret[0],caret[1]); }catch(e){} } };
+    const name=race.names[me];
+    const head = `<div class="s-head"><div class="s-who"><small>${race.mode==="team"?"우리 팀":"나"}</small>${esc(name)}</div>
+      <div class="s-score">점수 ${scoreOf(race,me)}점 · ${rankMap(race)[me]}위</div>
+      <div class="s-timer" data-stimer>${fmt(remainMs(race))}</div></div>`;
+    if(race.status==="lobby"){
+      app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div><div class="panel">${head}
+        <div class="join-card"><div class="wait-ic">⏳</div><h2 class="display" style="font-size:28px;color:var(--navy)">곧 시작해요!</h2>
+        <p class="hint" style="font-size:15px">선생님이 레이스를 시작하면 미션이 열려요.</p>
+        <button class="btn btn-ghost" id="chg" style="margin-top:14px">${race.mode==="team"?"팀":"이름"} 다시 고르기</button></div></div>`;
+      $("chg").onclick=()=>{ ls.del("mr-student-me-"+code); me=null; unR&&unR(); unS&&unS(); renderPick(); };
+      return;
+    }
+    if(race.status==="ended"){
+      if(!ended){ ended=true; burst(100); }
+      app.innerHTML = `<div class="head"><div class="tab-title display">최종 결과</div></div><div class="panel">${head}${podiumHTML(race)}
+        <h3 style="margin:24px 0 8px;color:var(--navy)">전체 점수판</h3>${boardHTML(race,{sorted:true,me})}</div>`;
+      return;
+    }
+    ended=false;
+    const open=canSubmit();
+    app.innerHTML = `<div class="head"><div class="tab-title display">미션 레이스</div></div><div class="panel">${head}
+      ${!open?`<p class="err" style="margin-bottom:12px">${race.timer.state==="paused"?"⏸ 선생님이 잠시 멈췄어요. 다시 시작하면 제출할 수 있어요.":"⏰ 시간이 끝났어요. 결과 발표를 기다려요!"}</p>`:""}
+      ${race.missions.map((m,k)=>{ const st=mstate(k); const mineK=mine.filter(x=>x.mission===k && x.who===me); const last=mineK[mineK.length-1];
+        const label={ok:"✅ 정답",pending:"⏳ 심사 중",no:"❌ 다시 도전",none:"도전 전"}[st];
+        return `<div class="smission ${st}"><div class="top"><div class="mn">${k+1}</div>
+          <div class="site">${esc(m.site)}${m.url?`<a href="${esc(m.url)}" target="_blank" rel="noopener">열기 ↗</a>`:""}</div>
+          <span class="state ${st}">${label}</span></div>
+          <div class="task">${esc(m.task)}</div><div class="rec">✍️ ${esc(m.rec)}</div>
+          ${k===4 && race.photo?`<img src="${race.photo}" alt="미션 사진">`:""}
+          ${st==="ok"||st==="pending" ? (last?`<div class="mine"><b>${st==="ok"?"정답 처리된 답":"제출한 답"}</b><br>${esc(last.answer)}<br><span style="color:var(--muted)">출처: ${esc(last.link)}</span></div>`:`<div class="mine">${race.mode==="team"?"팀 친구가 이미 맞혔어요!":"정답 처리됐어요!"}</div>`)
+            : `${st==="no"&&last?`<div class="mine" style="margin-bottom:8px">지난 답: ${esc(last.answer)} — 답이나 출처를 다시 확인해 봐요.</div>`:""}
+              <input data-a="${k}" placeholder="찾은 답" value="${esc(drafts[k]??"")}" ${open?"":"disabled"}>
+              <input data-l="${k}" placeholder="출처 링크 (주소 복사해서 붙여넣기)" value="${esc(drafts["l"+k]??"")}" ${open?"":"disabled"}>
+              <button class="btn btn-blue" data-sub="${k}" style="width:100%" ${open?"":"disabled"}>제출하기</button>`}
+        </div>`; }).join("")}
+      <h3 style="margin:22px 0 8px;color:var(--navy)">실시간 순위</h3>${boardHTML(race,{sorted:true,me})}
+    </div>`;
+    document.querySelectorAll("[data-sub]").forEach(b=>{ b._open=open; b.onclick=()=>send(+b.dataset.sub,b); });
+    restore();
+  }
+  async function send(k,btn){
+    const a=(document.querySelector(`[data-a="${k}"]`)||{}).value?.trim()||"", l=(document.querySelector(`[data-l="${k}"]`)||{}).value?.trim()||"";
+    if(!a){ toast("답을 적어 주세요"); return; }
+    if(!l){ toast("출처 링크도 꼭 적어야 점수가 나와요"); return; }
+    if(!canSubmit()){ toast("지금은 제출할 수 없어요"); return; }
+    btn.disabled=true;
+    try{ await api.submit(code,{who:me, mission:k, answer:a.slice(0,500), link:l.slice(0,800)}); delete drafts[k]; delete drafts["l"+k]; toast("제출했어요! 선생님이 확인 중이에요"); }
+    catch(e){ btn.disabled=false; showErr(e); }
+  }
+  if(code) enter(code); else renderJoin();
+}
+
+/* ===================================================================== boot */
+function showErr(e){
+  console.error(e);
+  const msg=String(e&&e.message||e);
+  let hint="";
+  if(/permission|insufficient/i.test(msg)) hint="파이어베이스 보안 규칙이 아직 적용되지 않았거나, 이 방을 만든 기기가 아니에요.";
+  else if(/auth|admin-restricted|operation-not-allowed/i.test(msg)) hint="파이어베이스 Authentication에서 '익명' 로그인을 켰는지 확인해 주세요.";
+  else if(/network|offline|unavailable/i.test(msg)) hint="인터넷 연결을 확인해 주세요.";
+  toast(hint||"문제가 생겼어요: "+msg.slice(0,80));
+}
+(async function(){
+  const isTeacher = new URLSearchParams(location.search).has("teacher");
+  let api;
+  try{
+    if(window.__MOCK_API__) api = await window.__MOCK_API__();
+    else {
+      if(!CFG || !CFG.projectId){ app.innerHTML=`<div class="panel" style="border-radius:26px"><div class="err"><b>파이어베이스 설정이 아직 없어요.</b><br>깃허브의 <code>config.js</code> 파일에 파이어베이스 콘솔 '구성'에서 복사한 <code>const firebaseConfig = {…};</code>를 붙여 넣어 주세요.</div></div>`; return; }
+      api = await makeFirebaseApi(CFG);
+    }
+  }catch(e){
+    const m=String(e&&e.message||e);
+    app.innerHTML=`<div class="panel" style="border-radius:26px"><div class="err"><b>연결하지 못했어요.</b><br>${/operation-not-allowed|admin-restricted/.test(m)?"파이어베이스 콘솔 > Authentication > 로그인 방법에서 <b>익명</b>을 사용 설정해 주세요.":esc(m)}</div></div>`;
+    return;
+  }
+  isTeacher ? teacher(api) : student(api);
+})();
+</script>
+</body>
+</html>
